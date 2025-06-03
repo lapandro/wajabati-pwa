@@ -1,1 +1,9 @@
+/* src/css/input.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* يمكنك إضافة أي CSS مخصص هنا إذا لزم الأمر */
+/* على سبيل المثال، لتجاوز بعض أنماط Tailwind أو إضافة أنماط عامة */
+
 
