@@ -1,1 +1,26 @@
+{
+  "name": "wajabati-pwa",
+  "version": "1.0.0",
+  "description": "Smart platform for restaurant management and customer orders as a PWA.",
+  "main": "src/js/main.js",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/css/input.css -o ./public/css/style.css --minify",
+    "watch:css": "tailwindcss -i ./src/css/input.css -o ./public/css/style.css --watch",
+    "start": "npm run watch:css"
+  },
+  "keywords": [
+    "PWA",
+    "Firebase",
+    "TailwindCSS",
+    "Restaurant App"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3"
+  }
+}
+
 
