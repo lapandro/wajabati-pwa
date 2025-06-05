@@ -1,4 +1,4 @@
-# .github/workflows/main.yml
+# .github/workflows/firebase-hosting-merge.yml
 # اسم سير العمل الذي سيظهر في GitHub Actions
 name: Deploy to Firebase Hosting on merge
 
