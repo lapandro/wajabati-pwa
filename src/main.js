@@ -4,19 +4,20 @@ import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, 
 import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
 import { firebaseConfig, appId } from './config/firebaseConfig.js';
-import * as authService from './services/authService.js';
-import * as firestoreService from './services/firestoreService.js';
+import * as authService from './services/authService.js'; // استيراد خدمات المصادقة
+import * as firestoreService from './services/firestoreService.js'; // استيراد خدمات Firestore
 
 // تهيئة Firebase
 const app = initializeApp(firebaseConfig);
-export { app };
+export { app }; // تصدير 'app' ليتم استخدامه في الخدمات الأخرى
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-let userId = null;
-let isAuthReady = false;
+let userId = null; // لتخزين معرف المستخدم الحالي
+let isAuthReady = false; // لتحديد ما إذا كانت حالة المصادقة جاهزة
 
-const appRoot = document.getElementById('app-root'); 
+// **التغيير هنا:** تم تغيير appContent إلى appRoot ليتطابق مع ID في index.html
+const appRoot = document.getElementById('app-root');
 const loginButton = document.getElementById('login-button');
 const signupButton = document.getElementById('signup-button');
 const logoutButton = document.getElementById('logout-button');
@@ -35,7 +36,7 @@ function showMessage(message, type = 'info') {
 // تسجيل Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js') // استخدام المسار الجذري
+        navigator.serviceWorker.register('/sw.js')
             .then(registration => {
                 console.log('Service Worker registered with scope:', registration.scope);
             })
@@ -47,30 +48,38 @@ if ('serviceWorker' in navigator) {
 
 // معالجة حالة المصادقة
 onAuthStateChanged(auth, async (user) => {
-    isAuthReady = true;
+    isAuthReady = true; // تم التحقق من حالة المصادقة الأولية
     if (user) {
         userId = user.uid;
         console.log('المستخدم مسجل الدخول:', userId);
         showMessage('تم تسجيل الدخول بنجاح!', 'success');
+        // إخفاء أزرار تسجيل الدخول/الاشتراك وإظهار زر تسجيل الخروج
         loginButton.classList.add('hidden');
         signupButton.classList.add('hidden');
         logoutButton.classList.remove('hidden');
+
+        // جلب دور المستخدم (عميل أو صاحب مطعم) وعرض الواجهة المناسبة
         await fetchUserRole(userId);
+
     } else {
         userId = null;
         console.log('المستخدم غير مسجل الدخول.');
         showMessage('يرجى تسجيل الدخول أو إنشاء حساب.', 'info');
+        // إظهار أزرار تسجيل الدخول/الاشتراك وإخفاء زر تسجيل الخروج
         loginButton.classList.remove('hidden');
         signupButton.classList.remove('hidden');
         logoutButton.classList.add('hidden');
+        // عرض الواجهة العامة (صفحة تسجيل الدخول/الترحيب)
         renderPublicView();
 
+        // محاولة تسجيل الدخول باستخدام الرمز المخصص إذا كان متاحًا
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
             try {
                 await signInWithCustomToken(auth, __initial_auth_token);
                 console.log('تم تسجيل الدخول تلقائيًا باستخدام الرمز المخصص.');
             } catch (error) {
                 console.error('فشل تسجيل الدخول بالرمز المخصص:', error);
+                // إذا فشل الرمز المخصص، حاول تسجيل الدخول كمجهول
                 try {
                     await signInAnonymously(auth);
                     console.log('تم تسجيل الدخول كمستخدم مجهول.');
@@ -79,6 +88,7 @@ onAuthStateChanged(auth, async (user) => {
                 }
             }
         } else {
+            // إذا لم يكن هناك رمز مخصص، سجل الدخول كمجهول
             try {
                 await signInAnonymously(auth);
                 console.log('تم تسجيل الدخول كمستخدم مجهول.');
@@ -96,7 +106,8 @@ async function fetchUserRole(uid) {
         return;
     }
     try {
-        const userData = await firestoreService.getDocument('userData/profile', uid, 'profile', false);
+        // استخدام firestoreService لجلب مستند المستخدم
+        const userData = await firestoreService.getDocument('userData/profile', uid, 'profile', false); // 'profile' هو معرف المستند داخل userData subcollection
 
         if (userData) {
             const role = userData.role;
@@ -106,21 +117,23 @@ async function fetchUserRole(uid) {
             } else if (role === 'restaurant_owner') {
                 renderRestaurantDashboard();
             } else {
-                renderPublicView();
+                renderPublicView(); // دور غير معروف أو عام
             }
         } else {
             console.log('مستند المستخدم غير موجود في Firestore، ربما مستخدم جديد.');
+            // إذا كان المستخدم جديدًا، اعرض صفحة اختيار الدور أو تسجيل الملف الشخصي
             renderProfileSetupView();
         }
     } catch (error) {
         console.error('خطأ في جلب دور المستخدم:', error);
         showMessage('خطأ في جلب معلومات المستخدم.', 'error');
-        renderPublicView();
+        renderPublicView(); // عرض الواجهة العامة في حالة الخطأ
     }
 }
 
-// وظائف لعرض الواجهات المختلفة
+// وظائف لعرض الواجهات المختلفة (سيتم تطويرها لاحقًا)
 function renderPublicView() {
+    // **التغيير هنا:** استخدام appRoot بدلاً من appContent
     appRoot.innerHTML = `
         <h2 class="text-3xl font-semibold text-center text-red-700 mb-6">مرحباً بك في وجباتي!</h2>
         <p class="text-center text-gray-700 mb-8">منصة المطاعم والطلبات الذكية.</p>
@@ -132,6 +145,7 @@ function renderPublicView() {
 }
 
 function renderCustomerDashboard() {
+    // **التغيير هنا:** استخدام appRoot بدلاً من appContent
     appRoot.innerHTML = `
         <h2 class="text-3xl font-semibold text-center text-green-700 mb-6">لوحة تحكم العميل</h2>
         <p class="text-center text-gray-700 mb-4">مرحباً بك أيها العميل! استكشف المطاعم أو تتبع طلباتك.</p>
@@ -160,6 +174,7 @@ function renderCustomerDashboard() {
 }
 
 function renderRestaurantDashboard() {
+    // **التغيير هنا:** استخدام appRoot بدلاً من appContent
     appRoot.innerHTML = `
         <h2 class="text-3xl font-semibold text-center text-orange-700 mb-6">لوحة تحكم المطعم</h2>
         <p class="text-center text-gray-700 mb-4">مرحباً بك يا صاحب المطعم! قم بإدارة طلباتك وقوائمك.</p>
@@ -188,6 +203,7 @@ function renderRestaurantDashboard() {
 }
 
 function renderProfileSetupView() {
+    // **التغيير هنا:** استخدام appRoot بدلاً من appContent
     appRoot.innerHTML = `
         <h2 class="text-3xl font-semibold text-center text-purple-700 mb-6">إعداد الملف الشخصي</h2>
         <p class="text-center text-gray-700 mb-4">يبدو أنك مستخدم جديد. يرجى اختيار دورك:</p>
@@ -254,5 +270,7 @@ logoutButton.addEventListener('click', async () => {
     }
 });
 
+// تهيئة أولية للواجهة عند تحميل الصفحة
+// سيتم تحديثها بواسطة onAuthStateChanged
 renderPublicView();
 
