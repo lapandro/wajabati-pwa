@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v3
 
       # خطوة إعداد بيئة Node.js
-      - name: Install Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20' # استخدام الإصدار 20 من Node.js
@@ -30,10 +30,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # خطوة بناء Tailwind CSS - تم تصحيح المسافات البادئة هنا
-      # هذه الخطوة ضرورية لتوليد ملف public/css/style.css
+      # خطوة بناء Tailwind CSS
       - name: Build Tailwind CSS
         run: npm run build:css
+
+      # **الخطوة الجديدة والهامة:** نسخ ملفات JavaScript من src/js إلى public/js
+      - name: Copy JavaScript files to public directory
+        run: |
+          mkdir -p public/js # إنشاء مجلد public/js إذا لم يكن موجودًا
+          cp -R src/js/* public/js/ # نسخ جميع المحتويات من src/js إلى public/js
 
       # خطوة النشر إلى Firebase Hosting
       - name: Deploy to Firebase Hosting
