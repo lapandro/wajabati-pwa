@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#F87171" /> <!-- تم تعديل اللون ليتناسب مع Primary Color -->
+    <meta name="theme-color" content="#F87171" /> 
     <title>وجباتي - المنصة الذكية لإدارة المطاعم وطلبات العملاء</title>
 
     <!-- Manifest & Icons: استخدام المسارات الجذرية -->
@@ -49,7 +49,6 @@
         <nav class="container mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-bold">وجباتي</h1>
             <div id="auth-buttons" class="space-x-4 flex items-center">
-                <!-- هذه الأزرار سيتم التحكم في رؤيتها بواسطة JavaScript -->
                 <button id="login-button" class="bg-white text-red-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition-colors">تسجيل الدخول</button>
                 <button id="signup-button" class="bg-white text-red-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition-colors">إنشاء حساب</button>
                 <button id="logout-button" class="bg-white text-red-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition-colors hidden">تسجيل الخروج</button>
@@ -57,12 +56,10 @@
         </nav>
     </header>
 
-    <!-- المحتوى الرئيسي للتطبيق: سيتم استبدال هذا المحتوى بواسطة JavaScript.
-         يتضمن الآن رسالة تحميل أولية مع مؤشر لتقديم تجربة أفضل للمستخدم. -->
+    <!-- المحتوى الرئيسي للتطبيق: سيتم استبدال هذا المحتوى بواسطة JavaScript. -->
     <main id="app-root" class="app-container bg-white rounded-lg shadow-lg">
         <div class="text-center w-full p-8">
             <p class="text-2xl font-semibold text-gray-700 mb-4">جاري تحميل التطبيق...</p>
-            <!-- مؤشر تحميل دوار (spinner) من Tailwind CSS -->
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
         </div>
     </main>
@@ -72,12 +69,8 @@
         <p>&copy; 2024 وجباتي. جميع الحقوق محفوظة.</p>
     </footer>
 
-    <!-- ربط ملف JavaScript الرئيسي: استخدام المسار الجذري.
-         هذا الملف مسؤول عن تهيئة Firebase، Service Worker، وعرض الواجهة. -->
+    <!-- ربط ملف JavaScript الرئيسي: استخدام المسار الجذري. -->
     <script type="module" src="/js/main.js"></script>
-
-    <!-- *** ملاحظة هامة: تم إزالة كود تسجيل Service Worker المكرر هنا ***
-         التسجيل يتم بالفعل في src/js/main.js للحفاظ على نظافة الكود. -->
 </body>
 </html>
 
