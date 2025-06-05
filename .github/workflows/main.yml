@@ -34,10 +34,11 @@ jobs:
       - name: Build Tailwind CSS
         run: npm run build:css
 
-      # **الخطوة الجديدة والهامة:** نسخ ملفات JavaScript من src/js إلى public/js
+      # **هنا يجب أن تكون هذه الخطوة:** نسخ ملفات JavaScript من src/js إلى public/js
+      # هذا يضمن أن ملفات JS الخاصة بك سيتم تضمينها في مجلد public للنشر
       - name: Copy JavaScript files to public directory
         run: |
-          mkdir -p public/js # إنشاء مجلد public/js إذا لم يكن موجودًا
+          mkdir -p public/js # إنشاء مجلد public/js إذا لم يكن موجودًا (الخيار -p مهم)
           cp -R src/js/* public/js/ # نسخ جميع المحتويات من src/js إلى public/js
 
       # خطوة النشر إلى Firebase Hosting
