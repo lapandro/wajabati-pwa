@@ -16,7 +16,8 @@ const auth = getAuth(app);
 let userId = null; // لتخزين معرف المستخدم الحالي
 let isAuthReady = false; // لتحديد ما إذا كانت حالة المصادقة جاهزة
 
-const appContent = document.getElementById('app-content');
+// **التغيير هنا:** تم تغيير appContent إلى appRoot ليتطابق مع ID في index.html
+const appRoot = document.getElementById('app-root');
 const loginButton = document.getElementById('login-button');
 const signupButton = document.getElementById('signup-button');
 const logoutButton = document.getElementById('logout-button');
@@ -132,7 +133,8 @@ async function fetchUserRole(uid) {
 
 // وظائف لعرض الواجهات المختلفة (سيتم تطويرها لاحقًا)
 function renderPublicView() {
-    appContent.innerHTML = `
+    // **التغيير هنا:** استخدام appRoot بدلاً من appContent
+    appRoot.innerHTML = `
         <h2 class="text-3xl font-semibold text-center text-red-700 mb-6">مرحباً بك في وجباتي!</h2>
         <p class="text-center text-gray-700 mb-8">منصة المطاعم والطلبات الذكية.</p>
         <div class="flex justify-center">
@@ -143,7 +145,8 @@ function renderPublicView() {
 }
 
 function renderCustomerDashboard() {
-    appContent.innerHTML = `
+    // **التغيير هنا:** استخدام appRoot بدلاً من appContent
+    appRoot.innerHTML = `
         <h2 class="text-3xl font-semibold text-center text-green-700 mb-6">لوحة تحكم العميل</h2>
         <p class="text-center text-gray-700 mb-4">مرحباً بك أيها العميل! استكشف المطاعم أو تتبع طلباتك.</p>
         <p class="text-center text-gray-700 mb-8">معرف المستخدم الخاص بك: <span class="font-bold text-blue-600">${userId}</span></p>
@@ -171,7 +174,8 @@ function renderCustomerDashboard() {
 }
 
 function renderRestaurantDashboard() {
-    appContent.innerHTML = `
+    // **التغيير هنا:** استخدام appRoot بدلاً من appContent
+    appRoot.innerHTML = `
         <h2 class="text-3xl font-semibold text-center text-orange-700 mb-6">لوحة تحكم المطعم</h2>
         <p class="text-center text-gray-700 mb-4">مرحباً بك يا صاحب المطعم! قم بإدارة طلباتك وقوائمك.</p>
         <p class="text-center text-gray-700 mb-8">معرف المستخدم الخاص بك: <span class="font-bold text-blue-600">${userId}</span></p>
@@ -199,7 +203,8 @@ function renderRestaurantDashboard() {
 }
 
 function renderProfileSetupView() {
-    appContent.innerHTML = `
+    // **التغيير هنا:** استخدام appRoot بدلاً من appContent
+    appRoot.innerHTML = `
         <h2 class="text-3xl font-semibold text-center text-purple-700 mb-6">إعداد الملف الشخصي</h2>
         <p class="text-center text-gray-700 mb-4">يبدو أنك مستخدم جديد. يرجى اختيار دورك:</p>
         <div class="flex justify-center space-x-6 mt-8">
@@ -223,13 +228,12 @@ async function saveUserRole(role) {
         return;
     }
     try {
-        // استخدام firestoreService لتعيين دور المستخدم
         const success = await firestoreService.setDocument('userData/profile', userId, 'profile', {
-            email: auth.currentUser.email || '', // يمكن أن يكون فارغًا للمستخدمين المجهولين
+            email: auth.currentUser.email || '',
             role: role,
             displayName: auth.currentUser.displayName || `مستخدم ${role}`,
             createdAt: new Date(),
-        }, false, true); // false لبيانات خاصة بالمستخدم, true لدمج البيانات
+        }, false, true);
 
         if (success) {
             showMessage(`تم حفظ دورك كـ ${role} بنجاح!`, 'success');
@@ -248,30 +252,19 @@ async function saveUserRole(role) {
 }
 
 
-// معالجة أحداث النقر على أزرار المصادقة
-// في تطبيق حقيقي، ستنتقل هذه الوظائف إلى صفحات تسجيل الدخول/الاشتراك
-// هنا نستخدم وظائف authService للمحاكاة الأولية
 loginButton.addEventListener('click', async () => {
-    // هذه مجرد محاكاة، ستحتاج إلى واجهة مستخدم فعلية لتسجيل الدخول
     showMessage('سيتم عرض نموذج تسجيل الدخول قريباً. (ميزة قيد التطوير)', 'info');
-    // For demo purposes, you could try signing in anonymously or with dummy credentials
-    // const result = await authService.signInWithEmail("test@example.com", "password123");
-    // if (result.error) showMessage(result.error, 'error');
 });
 
 signupButton.addEventListener('click', async () => {
-    // هذه مجرد محاكاة، ستحتاج إلى واجهة مستخدم فعلية لإنشاء حساب
     showMessage('سيتم عرض نموذج إنشاء حساب قريباً. (ميزة قيد التطوير)', 'info');
-    // For demo purposes, you could try creating an anonymous account
-    // const result = await authService.signUpWithEmail("newuser@example.com", "newpassword123");
-    // if (result.error) showMessage(result.error, 'error');
 });
 
 logoutButton.addEventListener('click', async () => {
     const result = await authService.signOutUser();
     if (result.success) {
         showMessage('تم تسجيل الخروج بنجاح!', 'success');
-        renderPublicView(); // العودة إلى الواجهة العامة بعد تسجيل الخروج
+        renderPublicView();
     } else {
         showMessage(result.error || 'فشل تسجيل الخروج.', 'error');
     }
