@@ -1,9 +1,13 @@
 /* src/css/input.css */
+
+/* توجيهات Tailwind الأساسية: يجب أن تكون هذه الأسطر موجودة تمامًا كما هي */
+/* @tailwind base: يقوم بإدخال الأنماط الأساسية لـ Tailwind */
 @tailwind base;
+/* @tailwind components: يقوم بإدخال المكونات المحددة بواسطة Tailwind (مثل الأزرار الجاهزة) */
 @tailwind components;
+/* @tailwind utilities: يقوم بإدخال كلاسات الأدوات المساعدة (مثل flex, text-red-500, p-4) */
 @tailwind utilities;
 
-/* يمكنك إضافة أي CSS مخصص هنا إذا لزم الأمر */
-/* على سبيل المثال، لتجاوز بعض أنماط Tailwind أو إضافة أنماط عامة */
-
+/* يمكنك إضافة أي CSS مخصص هنا إذا كنت بحاجة إلى أنماط لا يوفرها Tailwind */
+/* هذه الأنماط ستضاف في النهاية إلى ملف public/css/style.css */
 
