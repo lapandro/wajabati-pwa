@@ -1,42 +1,60 @@
 // src/js/main.js
+// هذا الملف هو نقطة الدخول الرئيسية لمنطق JavaScript في تطبيق وجباتي.
+// يقوم بتهيئة Firebase، إدارة حالة المصادقة، وتحديث الواجهة بناءً على دور المستخدم.
+
+// استيراد وحدات Firebase الأساسية
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
+// استيراد إعدادات Firebase ومعرف التطبيق الخاص بنا
 import { firebaseConfig, appId } from './config/firebaseConfig.js';
-import * as authService from './services/authService.js'; // استيراد خدمات المصادقة
-import * as firestoreService from './services/firestoreService.js'; // استيراد خدمات Firestore
+// استيراد خدمات المصادقة المخصصة
+import * as authService from './services/authService.js'; 
+// استيراد خدمات Firestore المخصصة للتفاعل مع قاعدة البيانات
+import * as firestoreService from './services/firestoreService.js'; 
 
-// تهيئة Firebase
+// تهيئة تطبيق Firebase
 const app = initializeApp(firebaseConfig);
-export { app }; // تصدير 'app' ليتم استخدامه في الخدمات الأخرى
+// تصدير 'app' ليتم استخدامه في الخدمات الأخرى التي تحتاج إلى الوصول إلى كائن التطبيق المهيأ
+export { app }; 
+// الحصول على مثيل قاعدة بيانات Firestore
 const db = getFirestore(app);
+// الحصول على مثيل خدمة المصادقة
 const auth = getAuth(app);
 
-let userId = null; // لتخزين معرف المستخدم الحالي
-let isAuthReady = false; // لتحديد ما إذا كانت حالة المصادقة جاهزة
+// متغيرات لتخزين معرف المستخدم وحالة المصادقة
+let userId = null; // لتخزين معرف المستخدم الحالي (UID)
+let isAuthReady = false; // لتحديد ما إذا كانت حالة المصادقة الأولية جاهزة
 
-// **التغيير هنا:** تم تغيير appContent إلى appRoot ليتطابق مع ID في index.html
-const appRoot = document.getElementById('app-root');
+// الحصول على مراجع لعناصر HTML الرئيسية باستخدام معرفاتهم
+// **التغيير الحاسم هنا:** تم تغيير appContent إلى appRoot ليتطابق مع ID في index.html
+const appRoot = document.getElementById('app-root'); 
 const loginButton = document.getElementById('login-button');
 const signupButton = document.getElementById('signup-button');
 const logoutButton = document.getElementById('logout-button');
 
-// وظيفة لعرض رسالة مؤقتة للمستخدم
+/**
+ * وظيفة لعرض رسالة مؤقتة للمستخدم (إشعار) في زاوية الشاشة.
+ * @param {string} message - نص الرسالة المراد عرضها.
+ * @param {string} type - نوع الرسالة ('info', 'success', 'error') لتحديد اللون.
+ */
 function showMessage(message, type = 'info') {
     const messageBox = document.createElement('div');
+    // استخدام كلاسات Tailwind لتصميم مربع الرسالة
     messageBox.className = `fixed bottom-4 right-4 p-3 rounded-lg shadow-lg text-white ${type === 'error' ? 'bg-red-500' : 'bg-green-500'} z-50`;
     messageBox.textContent = message;
     document.body.appendChild(messageBox);
+    // إزالة مربع الرسالة بعد 3 ثوانٍ
     setTimeout(() => {
         messageBox.remove();
     }, 3000);
 }
 
-// تسجيل Service Worker
+// تسجيل Service Worker لتفعيل ميزات PWA (التخزين المؤقت، الإشعارات)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.register('/sw.js') // استخدام المسار الجذري الصحيح لـ sw.js
             .then(registration => {
                 console.log('Service Worker registered with scope:', registration.scope);
             })
@@ -46,10 +64,11 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// معالجة حالة المصادقة
+// الاستماع إلى تغييرات حالة المصادقة (تسجيل الدخول، تسجيل الخروج)
 onAuthStateChanged(auth, async (user) => {
-    isAuthReady = true; // تم التحقق من حالة المصادقة الأولية
+    isAuthReady = true; // تم التحقق من حالة المصادقة الأولية الآن
     if (user) {
+        // إذا كان المستخدم مسجلاً الدخول (بأي طريقة)
         userId = user.uid;
         console.log('المستخدم مسجل الدخول:', userId);
         showMessage('تم تسجيل الدخول بنجاح!', 'success');
@@ -58,10 +77,11 @@ onAuthStateChanged(auth, async (user) => {
         signupButton.classList.add('hidden');
         logoutButton.classList.remove('hidden');
 
-        // جلب دور المستخدم (عميل أو صاحب مطعم) وعرض الواجهة المناسبة
+        // جلب دور المستخدم (عميل أو صاحب مطعم) وعرض الواجهة المناسبة له
         await fetchUserRole(userId);
 
     } else {
+        // إذا كان المستخدم غير مسجل الدخول
         userId = null;
         console.log('المستخدم غير مسجل الدخول.');
         showMessage('يرجى تسجيل الدخول أو إنشاء حساب.', 'info');
@@ -72,14 +92,14 @@ onAuthStateChanged(auth, async (user) => {
         // عرض الواجهة العامة (صفحة تسجيل الدخول/الترحيب)
         renderPublicView();
 
-        // محاولة تسجيل الدخول باستخدام الرمز المخصص إذا كان متاحًا
+        // محاولة تسجيل الدخول باستخدام الرمز المخصص (خاص ببيئة Canvas) إذا كان متاحًا
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
             try {
                 await signInWithCustomToken(auth, __initial_auth_token);
                 console.log('تم تسجيل الدخول تلقائيًا باستخدام الرمز المخصص.');
             } catch (error) {
                 console.error('فشل تسجيل الدخول بالرمز المخصص:', error);
-                // إذا فشل الرمز المخصص، حاول تسجيل الدخول كمجهول
+                // إذا فشل الرمز المخصص، حاول تسجيل الدخول كمجهول (لمستخدمي Firebase)
                 try {
                     await signInAnonymously(auth);
                     console.log('تم تسجيل الدخول كمستخدم مجهول.');
@@ -88,7 +108,7 @@ onAuthStateChanged(auth, async (user) => {
                 }
             }
         } else {
-            // إذا لم يكن هناك رمز مخصص، سجل الدخول كمجهول
+            // إذا لم يكن هناك رمز مخصص، سجل الدخول كمجهول (الافتراضي للمستخدمين غير المصادق عليهم)
             try {
                 await signInAnonymously(auth);
                 console.log('تم تسجيل الدخول كمستخدم مجهول.');
@@ -99,29 +119,35 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// وظيفة لجلب دور المستخدم من Firestore
+/**
+ * وظيفة لجلب دور المستخدم من Firestore وتحديد الواجهة المناسبة لعرضها.
+ * @param {string} uid - معرف المستخدم (UID).
+ */
 async function fetchUserRole(uid) {
+    // التحقق من أن حالة المصادقة جاهزة قبل محاولة عمليات Firestore
     if (!isAuthReady) {
         console.warn("Firestore operations attempted before auth state is ready.");
         return;
     }
     try {
-        // استخدام firestoreService لجلب مستند المستخدم
-        const userData = await firestoreService.getDocument('userData/profile', uid, 'profile', false); // 'profile' هو معرف المستند داخل userData subcollection
+        // استخدام firestoreService لجلب مستند الملف الشخصي للمستخدم
+        const userData = await firestoreService.getDocument('userData/profile', uid, 'profile', false); // 'profile' هو معرف المستند داخل مجموعة userData الفرعية للمستخدم
 
         if (userData) {
+            // إذا وجد مستند المستخدم، فاحصل على دوره
             const role = userData.role;
             console.log('دور المستخدم:', role);
+            // عرض لوحة التحكم المناسبة بناءً على الدور
             if (role === 'customer') {
                 renderCustomerDashboard();
             } else if (role === 'restaurant_owner') {
                 renderRestaurantDashboard();
             } else {
-                renderPublicView(); // دور غير معروف أو عام
+                renderPublicView(); // دور غير معروف أو عام، العودة للواجهة العامة
             }
         } else {
             console.log('مستند المستخدم غير موجود في Firestore، ربما مستخدم جديد.');
-            // إذا كان المستخدم جديدًا، اعرض صفحة اختيار الدور أو تسجيل الملف الشخصي
+            // إذا كان المستخدم جديدًا ولم يتم تعيين دور له، اعرض صفحة إعداد الملف الشخصي
             renderProfileSetupView();
         }
     } catch (error) {
@@ -131,9 +157,11 @@ async function fetchUserRole(uid) {
     }
 }
 
-// وظائف لعرض الواجهات المختلفة (سيتم تطويرها لاحقًا)
+/**
+ * وظيفة لعرض الواجهة العامة (صفحة الترحيب/تسجيل الدخول).
+ */
 function renderPublicView() {
-    // **التغيير هنا:** استخدام appRoot بدلاً من appContent
+    // استخدام appRoot لتحديث المحتوى الرئيسي للصفحة
     appRoot.innerHTML = `
         <h2 class="text-3xl font-semibold text-center text-red-700 mb-6">مرحباً بك في وجباتي!</h2>
         <p class="text-center text-gray-700 mb-8">منصة المطاعم والطلبات الذكية.</p>
@@ -144,8 +172,11 @@ function renderPublicView() {
     `;
 }
 
+/**
+ * وظيفة لعرض لوحة تحكم العميل.
+ */
 function renderCustomerDashboard() {
-    // **التغيير هنا:** استخدام appRoot بدلاً من appContent
+    // استخدام appRoot لتحديث المحتوى الرئيسي للصفحة
     appRoot.innerHTML = `
         <h2 class="text-3xl font-semibold text-center text-green-700 mb-6">لوحة تحكم العميل</h2>
         <p class="text-center text-gray-700 mb-4">مرحباً بك أيها العميل! استكشف المطاعم أو تتبع طلباتك.</p>
@@ -173,8 +204,11 @@ function renderCustomerDashboard() {
     `;
 }
 
+/**
+ * وظيفة لعرض لوحة تحكم صاحب المطعم.
+ */
 function renderRestaurantDashboard() {
-    // **التغيير هنا:** استخدام appRoot بدلاً من appContent
+    // استخدام appRoot لتحديث المحتوى الرئيسي للصفحة
     appRoot.innerHTML = `
         <h2 class="text-3xl font-semibold text-center text-orange-700 mb-6">لوحة تحكم المطعم</h2>
         <p class="text-center text-gray-700 mb-4">مرحباً بك يا صاحب المطعم! قم بإدارة طلباتك وقوائمك.</p>
@@ -202,8 +236,11 @@ function renderRestaurantDashboard() {
     `;
 }
 
+/**
+ * وظيفة لعرض صفحة إعداد الملف الشخصي للمستخدمين الجدد.
+ */
 function renderProfileSetupView() {
-    // **التغيير هنا:** استخدام appRoot بدلاً من appContent
+    // استخدام appRoot لتحديث المحتوى الرئيسي للصفحة
     appRoot.innerHTML = `
         <h2 class="text-3xl font-semibold text-center text-purple-700 mb-6">إعداد الملف الشخصي</h2>
         <p class="text-center text-gray-700 mb-4">يبدو أنك مستخدم جديد. يرجى اختيار دورك:</p>
@@ -213,30 +250,38 @@ function renderProfileSetupView() {
         </div>
     `;
 
+    // إضافة مستمعي الأحداث لأزرار اختيار الدور
     document.getElementById('select-customer-role').addEventListener('click', () => saveUserRole('customer'));
     document.getElementById('select-restaurant-role').addEventListener('click', () => saveUserRole('restaurant_owner'));
 }
 
+/**
+ * وظيفة لحفظ دور المستخدم المحدد في Firestore.
+ * @param {string} role - الدور المراد حفظه ('customer' أو 'restaurant_owner').
+ */
 async function saveUserRole(role) {
     if (!userId) {
         showMessage('خطأ: لا يوجد مستخدم مسجل الدخول.', 'error');
         return;
     }
+    // التأكد من أن المصادقة جاهزة قبل محاولة الكتابة على Firestore
     if (!isAuthReady) {
         console.warn("Firestore operations attempted before auth state is ready.");
         showMessage('الرجاء الانتظار حتى يتم تهيئة المصادقة.', 'error');
         return;
     }
     try {
+        // استخدام firestoreService لتعيين دور المستخدم في مستند ملفه الشخصي
         const success = await firestoreService.setDocument('userData/profile', userId, 'profile', {
-            email: auth.currentUser.email || '',
-            role: role,
-            displayName: auth.currentUser.displayName || `مستخدم ${role}`,
-            createdAt: new Date(),
-        }, false, true);
+            email: auth.currentUser.email || '', // البريد الإلكتروني للمستخدم، قد يكون فارغًا للمستخدمين المجهولين
+            role: role, // الدور المحدد
+            displayName: auth.currentUser.displayName || `مستخدم ${role}`, // اسم عرض افتراضي
+            createdAt: new Date(), // تاريخ إنشاء الدور
+        }, false, true); // false لبيانات خاصة بالمستخدم (في مساره الخاص)، true لدمج البيانات إذا كان المستند موجودًا
 
         if (success) {
             showMessage(`تم حفظ دورك كـ ${role} بنجاح!`, 'success');
+            // عرض لوحة التحكم المناسبة بعد حفظ الدور
             if (role === 'customer') {
                 renderCustomerDashboard();
             } else {
@@ -252,25 +297,31 @@ async function saveUserRole(role) {
 }
 
 
+// مستمعو الأحداث لأزرار المصادقة في شريط الرأس
 loginButton.addEventListener('click', async () => {
+    // هذه مجرد محاكاة للوظيفة. في تطبيق حقيقي، ستنتقل إلى صفحة تسجيل الدخول الفعلية.
     showMessage('سيتم عرض نموذج تسجيل الدخول قريباً. (ميزة قيد التطوير)', 'info');
+    // يمكن هنا استدعاء authService.signInWithEmail(email, password) بواجهة مستخدم فعلية.
 });
 
 signupButton.addEventListener('click', async () => {
+    // هذه مجرد محاكاة للوظيفة. في تطبيق حقيقي، ستنتقل إلى صفحة إنشاء حساب فعلية.
     showMessage('سيتم عرض نموذج إنشاء حساب قريباً. (ميزة قيد التطوير)', 'info');
+    // يمكن هنا استدعاء authService.signUpWithEmail(email, password) بواجهة مستخدم فعلية.
 });
 
 logoutButton.addEventListener('click', async () => {
+    // استدعاء وظيفة تسجيل الخروج من authService
     const result = await authService.signOutUser();
     if (result.success) {
         showMessage('تم تسجيل الخروج بنجاح!', 'success');
-        renderPublicView();
+        renderPublicView(); // العودة إلى الواجهة العامة بعد تسجيل الخروج
     } else {
         showMessage(result.error || 'فشل تسجيل الخروج.', 'error');
     }
 });
 
 // تهيئة أولية للواجهة عند تحميل الصفحة
-// سيتم تحديثها بواسطة onAuthStateChanged
+// سيتم تحديثها تلقائيًا بواسطة onAuthStateChanged بمجرد تحديد حالة المصادقة
 renderPublicView();
 
