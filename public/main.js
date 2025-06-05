@@ -1,4 +1,4 @@
-echo 'document.addEventListener("DOMContentLoaded", () => {
+'document.addEventListener("DOMContentLoaded", () => {
   const app = document.getElementById("app-root");
   app.innerHTML = `
     <h2 style="color: #4A90E2;">مرحبًا بك في تطبيق وجباتي 🍽️</h2>
