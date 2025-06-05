@@ -16,7 +16,6 @@ const auth = getAuth(app);
 let userId = null;
 let isAuthReady = false;
 
-// تم تغيير المعرف هنا ليتوافق مع id="app-root" في index.html
 const appRoot = document.getElementById('app-root'); 
 const loginButton = document.getElementById('login-button');
 const signupButton = document.getElementById('signup-button');
@@ -25,7 +24,6 @@ const logoutButton = document.getElementById('logout-button');
 // وظيفة لعرض رسالة مؤقتة للمستخدم
 function showMessage(message, type = 'info') {
     const messageBox = document.createElement('div');
-    // استخدام كلاسات Tailwind التي تتوافق مع الأنماط المضمنة
     messageBox.className = `fixed bottom-4 right-4 p-3 rounded-lg shadow-lg text-white ${type === 'error' ? 'bg-red-500' : 'bg-green-500'} z-50`;
     messageBox.textContent = message;
     document.body.appendChild(messageBox);
@@ -35,7 +33,6 @@ function showMessage(message, type = 'info') {
 }
 
 // تسجيل Service Worker
-// هذا الجزء هو المسؤول عن تسجيل Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js') // استخدام المسار الجذري
